@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diari de Son</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Diari de Son</h1>
+            <div class="controls">
+                <button id="btnQuickFill" class="btn-primary">Omplir rutina habitual</button>
+                <div class="file-controls">
+                    <button id="btnSave" class="btn-secondary">Desar</button>
+                    <button id="btnExportJSON" class="btn-secondary">Descarregar JSON</button>
+                    <label for="inputImportJSON" class="btn-secondary">Carregar Còpia de Seguretat</label>
+                    <input type="file" id="inputImportJSON" accept=".json" style="display: none;">
+                    <button id="btnExportCSV" class="btn-secondary">Exportar a CSV (Excel)</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="legend">
+            <div class="legend-item"><span class="symbol">↓</span> l'hora que es fiqui al llit</div>
+            <div class="legend-item"><span class="symbol">↑</span> l'hora que s'aixequi del llit</div>
+            <div class="legend-item"><span class="block sleep">■</span> el temps que ha dormit</div>
+            <div class="legend-item"><span class="block awake">□</span> el temps que ha estat despert</div>
+        </section>
+
+        <section class="grid-wrapper">
+            <div class="grid-container" id="diaryGrid">
+                <!-- Grid Header -->
+                <div class="grid-row grid-header" id="gridHeaderRow">
+                    <div class="cell-header sticky-col">Data</div>
+                    <!-- Hours will be inserted here by JS -->
+                    <div class="cell-header summary-col">Hores de Nit</div>
+                    <div class="cell-header med-col">Medicació</div>
+                </div>
+                <!-- Grid Body -->
+                <div class="grid-body" id="gridBody">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Context Menu for Marker Placement -->
+    <div id="contextMenu" class="context-menu" style="display: none;">
+        <button id="setBedTimeBtn">Establir Llit (↓)</button>
+        <button id="setWakeTimeBtn">Establir Aixecar (↑)</button>
+        <button id="clearMarkerBtn">Netejar Marca</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
