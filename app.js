@@ -7,6 +7,7 @@ let diaryData = {};
 let isDragging = false;
 let dragMode = false; // true to set sleep, false to clear
 let currentContextMenuCell = null;
+let activeDateStr = null;
 
 const headerRow = document.getElementById('gridHeaderRow');
 const gridBody = document.getElementById('gridBody');
@@ -17,10 +18,17 @@ const clearMarkerBtn = document.getElementById('clearMarkerBtn');
 
 // Initialize Application
 function init() {
+    activeDateStr = formatDate(new Date());
+    
+    timeTooltip = document.createElement('div');
+    timeTooltip.id = 'timeTooltip';
+    timeTooltip.className = 'time-tooltip';
+    timeTooltip.style.display = 'none';
+    document.body.appendChild(timeTooltip);
+
     loadData();
     renderGridHeader();
     renderGridBody();
-    setupEventListeners();
 }
 
 // Generate Date string YYYY-MM-DD
@@ -99,7 +107,18 @@ function renderGridBody() {
 function createDayRow(dateStr) {
     const row = document.createElement('div');
     row.className = 'grid-row';
+    if (dateStr === activeDateStr) {
+        row.classList.add('active-day');
+    }
     row.dataset.date = dateStr;
+
+    row.addEventListener('mousedown', () => {
+        if (activeDateStr !== dateStr) {
+            document.querySelectorAll('.grid-row').forEach(r => r.classList.remove('active-day'));
+            row.classList.add('active-day');
+            activeDateStr = dateStr;
+        }
+    });
 
     // Date Cell
     const dateCell = document.createElement('div');
@@ -127,6 +146,11 @@ function createDayRow(dateStr) {
         
         // Context menu
         block.addEventListener('contextmenu', handleContextMenu);
+        
+        // Tooltip events
+        block.addEventListener('mouseover', handleMouseOver);
+        block.addEventListener('mousemove', handleMouseMove);
+        block.addEventListener('mouseleave', handleMouseLeave);
 
         row.appendChild(block);
     }
@@ -198,6 +222,29 @@ function toggleCell(cell) {
     
     updateSummary(dateStr, cell.parentElement);
 }
+
+// Tooltip logic
+let timeTooltip;
+
+function handleMouseOver(e) {
+    const idx = parseInt(e.currentTarget.dataset.index);
+    let h = Math.floor(idx / 12) + START_HOUR;
+    h = h % 24;
+    let m = String((idx % 12) * 5).padStart(2, '0');
+    
+    timeTooltip.textContent = `${String(h).padStart(2,'0')}:${m}`;
+    timeTooltip.style.display = 'block';
+}
+
+function handleMouseMove(e) {
+    timeTooltip.style.left = `${e.pageX}px`;
+    timeTooltip.style.top = `${e.pageY - 15}px`;
+}
+
+function handleMouseLeave(e) {
+    timeTooltip.style.display = 'none';
+}
+
 
 // Global mouse up
 document.addEventListener('mouseup', () => {
@@ -316,6 +363,20 @@ document.getElementById('inputImportJSON').addEventListener('change', (e) => {
     reader.readAsText(file);
 });
 
+document.getElementById('btnExportPDF').addEventListener('click', () => {
+    const element = document.getElementById('diaryGrid');
+    
+    const opt = {
+      margin:       [0.5, 0.5, 0.5, 0.5],
+      filename:     'diari_son.pdf',
+      image:        { type: 'jpeg', quality: 1 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+});
+
 document.getElementById('btnExportCSV').addEventListener('click', () => {
     let csvContent = "Data,Llit (↓),Aixecar (↑),Hores Nit,Medicació\n";
     
@@ -363,11 +424,9 @@ document.getElementById('btnExportCSV').addEventListener('click', () => {
 });
 
 document.getElementById('btnQuickFill').addEventListener('click', () => {
-    // Fill the first row (Today)
-    const today = formatDate(new Date());
-    if (!diaryData[today]) return;
+    if (!activeDateStr || !diaryData[activeDateStr]) return;
     
-    const dayData = diaryData[today];
+    const dayData = diaryData[activeDateStr];
     
     // Bed Time: 23:00 -> index 36 (3 hours * 12)
     dayData.bedTimeIndex = 36;
