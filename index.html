@@ -1,61 +1,312 @@
-<!DOCTYPE html>
-<html lang="ca">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diari de Son</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="app-container">
-        <header>
-            <h1>Diari de Son</h1>
-            <div class="controls">
-                <button id="btnQuickFill" class="btn-primary">Omplir rutina habitual</button>
-                <div class="file-controls">
-                    <button id="btnSave" class="btn-secondary">Desar</button>
-                    <button id="btnExportJSON" class="btn-secondary">Descarregar JSON</button>
-                    <label for="inputImportJSON" class="btn-secondary">Carregar Còpia de Seguretat</label>
-                    <input type="file" id="inputImportJSON" accept=".json" style="display: none;">
-                    <button id="btnExportCSV" class="btn-secondary">Exportar a CSV</button>
-                    <button id="btnExportPDF" class="btn-secondary">Descarregar PDF</button>
-                </div>
-            </div>
-        </header>
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --background-color: #f8f9fa;
+    --surface-color: #ffffff;
+    --border-color: #dee2e6;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --sleep-color: #34495e;
+    --awake-color: #ffffff;
+    --highlight-color: #e9ecef;
+    --marker-color: #e74c3c;
+}
 
-        <section class="legend">
-            <div class="legend-item"><span class="symbol">↓</span> l'hora que es fiqui al llit</div>
-            <div class="legend-item"><span class="symbol">↑</span> l'hora que s'aixequi del llit</div>
-            <div class="legend-item"><span class="block sleep">■</span> el temps que ha dormit</div>
-            <div class="legend-item"><span class="block awake">□</span> el temps que ha estat despert</div>
-        </section>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        <section class="grid-wrapper">
-            <div class="grid-container" id="diaryGrid">
-                <!-- Grid Header -->
-                <div class="grid-row grid-header" id="gridHeaderRow">
-                    <div class="cell-header sticky-col">Data</div>
-                    <!-- Hours will be inserted here by JS -->
-                    <div class="cell-header summary-col">Hores de Nit</div>
-                    <div class="cell-header med-col">Medicació</div>
-                </div>
-                <!-- Grid Body -->
-                <div class="grid-body" id="gridBody">
-                    <!-- Filled by JS -->
-                </div>
-            </div>
-        </section>
-    </div>
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
 
-    <!-- Context Menu for Marker Placement -->
-    <div id="contextMenu" class="context-menu" style="display: none;">
-        <button id="setBedTimeBtn">Establir Llit (↓)</button>
-        <button id="setWakeTimeBtn">Establir Aixecar (↑)</button>
-        <button id="clearMarkerBtn">Netejar Marca</button>
-    </div>
+.app-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.controls, .file-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button, .btn-secondary {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: inherit;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #e2e8f0;
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: #cbd5e1;
+}
+
+.legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background-color: var(--surface-color);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.symbol {
+    font-weight: bold;
+    color: var(--marker-color);
+    font-size: 18px;
+}
+
+.block {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.block.sleep {
+    background-color: var(--sleep-color);
+    border-color: var(--sleep-color);
+}
+
+.block.awake {
+    background-color: var(--awake-color);
+}
+
+.grid-wrapper {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow-x: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.grid-container {
+    min-width: 1400px; /* Ensures grid doesn't collapse too much */
+}
+
+/* Grid Layout */
+.grid-row {
+    display: grid;
+    /* Date (120px) | 168 x 5-min blocks (min 6px) | Night (80px) | Meds (200px) */
+    grid-template-columns: 120px repeat(168, minmax(6px, 1fr)) 80px 200px;
+    border-bottom: 1px solid var(--border-color);
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.grid-header {
+    background-color: var(--highlight-color);
+    font-weight: 600;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.grid-header .grid-row {
+    border-bottom: 2px solid var(--border-color);
+}
+
+.cell-header {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: var(--highlight-color);
+    z-index: 11;
+}
+
+.grid-body .sticky-col {
+    background-color: var(--surface-color);
+    transition: background-color 0.2s, border-left 0.2s;
+}
+
+.grid-row.active-day {
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.grid-row.active-day .cell-date {
+    background-color: #eaf4fc;
+    border-left-color: var(--secondary-color);
+}
+
+.hour-header-cell {
+    grid-column: span 12;
+    padding: 10px 0;
+    text-align: center;
+    border-right: 1px solid var(--border-color);
+    font-size: 12px;
+}
+
+/* Body Cells */
+.grid-cell {
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.cell-date {
+    padding: 10px;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+}
+
+.cell-timeblock {
+    cursor: crosshair;
+    background-color: var(--awake-color);
+    position: relative;
+    user-select: none; /* Prevent text selection while dragging */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+.cell-timeblock.is-sleeping {
+    background-color: var(--sleep-color) !important;
+}
+
+.cell-timeblock:hover {
+    filter: brightness(0.9);
+}
+
+.cell-summary {
+    padding: 10px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.cell-meds {
+    padding: 5px;
+}
+
+.meds-input {
+    width: 100%;
+    height: 100%;
+    border: 1px solid transparent;
+    padding: 5px;
+    font-family: inherit;
+    font-size: 13px;
+    border-radius: 4px;
+}
+
+.meds-input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    background-color: var(--highlight-color);
+}
+
+/* Markers */
+.marker {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color: var(--marker-color);
+    font-size: 16px;
+    pointer-events: none; /* Don't interfere with cell clicks */
+    text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; /* outline to be visible on dark sleep blocks */
+    z-index: 5;
+}
+
+/* Context Menu */
+.context-menu {
+    position: absolute;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    z-index: 1000;
+    min-width: 150px;
+    padding: 5px 0;
+}
+
+.context-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 15px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 0;
+}
+
+.context-menu button:hover {
+    background-color: var(--highlight-color);
+}
+
+/* Tooltip */
+.time-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 2000;
+    transform: translate(-50%, -100%);
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
